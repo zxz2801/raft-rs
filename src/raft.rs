@@ -2551,7 +2551,10 @@ impl<T: Storage> Raft<T> {
     // TODO: revoke pub when there is a better way to test.
     /// For a message, commit and send out heartbeat.
     pub fn handle_heartbeat(&mut self, mut m: Message) {
-        self.raft_log.commit_to(m.commit);
+        if self.raft_log.last_index() > m.commit {
+            self.raft_log.commit_to(m.commit);
+        }
+
         if self.pending_request_snapshot != INVALID_INDEX {
             self.send_request_snapshot();
             return;
